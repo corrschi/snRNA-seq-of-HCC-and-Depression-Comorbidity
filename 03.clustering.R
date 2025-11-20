@@ -1,7 +1,7 @@
 # ---------------------------------------------
 # Seurat harmony and clustering and Annotation
 # --------------------------------------------
-setwd("~/Workspace/06_mdd.liver/paper/clustering-total")
+setwd("~/Workspace/ouyang/06_mdd.liver/paper/clustering-total")
 load(file.path(out_dir, "mdd_liver_doublet_removed_merged.RData"))
 
 dim.use <- 30
@@ -39,7 +39,7 @@ MERGE.markers <- MERGE.markers %>% TOP_N(5000)
 write.table(top50,file = paste0(object.name,"_res", res.use ,"_dim", dim.use ,"_culster_top50_DEGs.csv"),sep = ",", row.names = T, quote = F)
 write.table(MERGE.markers,file = paste0(object.name,"_res",res.use ,"_dim", dim.use ,"_culster_all_DEGs.csv"),sep = ",",row.names = T,quote = F)
 escc.makers <- MERGE.markers
-save(escc.makers,file = "/public/home/chidm/Workspace/ouyang/06_mdd.liver/paper/clustering-total/total_clustering.markers.RData")
+save(escc.makers,file = "~/Workspace/ouyang/06_mdd.liver/paper/clustering-total/total_clustering.markers.RData")
 
 
 ####----------分群常用Marker总结（小鼠）------###########
@@ -85,10 +85,10 @@ MERGE[["Anno.chi"]] <- Idents(object = MERGE)
 subset_cells <- MERGE
 subset_cells@assays$RNA@data <- as.matrix(0)
 subset_cells@assays$RNA@scale.data <- as.matrix(0)
-save(subset_cells, file = "~/Workspace/06_mdd.liver/paper/clustering-total/mdd.liver-v0/mdd.liver.RData")
+save(subset_cells, file = "~/Workspace/ouyang/06_mdd.liver/paper/clustering-total/mdd.liver-v0/mdd.liver.RData")
 
 meta.data <- MERGE@meta.data
-save(meta.data, file = "~/Workspace/06_mdd.liver/paper/clustering-total/mdd.liver-v0/mdd.liver_meta.data.RData")
+save(meta.data, file = "~/Workspace/ouyang/06_mdd.liver/paper/clustering-total/mdd.liver-v0/mdd.liver_meta.data.RData")
 
 
 ##########---------Plots----------###########
@@ -186,17 +186,17 @@ MERGE.markers %>% TOP_N(50, pct.1 = 0.2) -> top50
 MERGE.markers <- MERGE.markers %>% TOP_N(5000)
 write.table(top50,file = paste0(object.name,"_res", res.use ,"_dim", dim.use ,"_culster_top50_DEGs-sampling500-ANNO.csv"),sep = ",", row.names = T, quote = F)
 write.table(MERGE.markers,file = paste0(object.name,"_res",res.use ,"_dim", dim.use ,"_culster_all_DEGssampling500-ANNO.csv"),sep = ",",row.names = T,quote = F)
-save(MERGE.markers,file = "/public/home/chidm/Workspace/ouyang/06_mdd.liver/paper/clustering-total/total_clustering.markers-ANNO.RData")
+save(MERGE.markers,file = "~/Workspace/ouyang/06_mdd.liver/paper/clustering-total/total_clustering.markers-ANNO.RData")
 
 
 ##########---------save mdd.liver ----------###########
 subset_cells <- MERGE
 subset_cells@assays$RNA@data <- as.matrix(0)
 subset_cells@assays$RNA@scale.data <- as.matrix(0)
-save(subset_cells, file = "/public/home/chidm/Workspace/ouyang/06_mdd.liver/paper/clustering-total/mdd.liver_use.RData")
+save(subset_cells, file = "~/Workspace/ouyang/06_mdd.liver/paper/clustering-total/mdd.liver_use.RData")
 
 meta.data <- MERGE@meta.data
-save(meta.data, file = "/public/home/chidm/Workspace/ouyang/06_mdd.liver/paper/clustering-total/mdd.liver_meta.data_use.RData")
+save(meta.data, file = "~/Workspace/ouyang/06_mdd.liver/paper/clustering-total/mdd.liver_meta.data_use.RData")
 
 ######----------plots Fig5e.Pieplot-----------#####
 # Fig5e
