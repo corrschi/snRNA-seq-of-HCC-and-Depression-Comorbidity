@@ -1,7 +1,7 @@
 # ---------------------------------------------
 # Seurat harmony and clustering and Annotation
 # --------------------------------------------
-setwd("/public/home/chidm/Workspace/ouyang/06_mdd.liver/paper/clustering-total")
+setwd("~/Workspace/06_mdd.liver/paper/clustering-total")
 load(file.path(out_dir, "mdd_liver_doublet_removed_merged.RData"))
 
 dim.use <- 30
@@ -32,14 +32,14 @@ merged_seurat <- MERGE #修改
 
 #FindMarkers
 object.name <- "mdd.liver"
-MERGE.sampling <- subset(MERGE, cells=WhichCells(escc, downsample=500, seed = seed.use))#抽样
 # MERGE.sampling <- MERGE
 MERGE.markers <- FindMarkers_parallel(MERGE.sampling, mc.cores = 5)
 MERGE.markers %>% TOP_N(50, pct.1 = 0.2) -> top50
 MERGE.markers <- MERGE.markers %>% TOP_N(5000)
-write.table(top50,file = paste0(object.name,"_res", res.use ,"_dim", dim.use ,"_culster_top50_DEGs-sampling500.csv"),sep = ",", row.names = T, quote = F)
-write.table(MERGE.markers,file = paste0(object.name,"_res",res.use ,"_dim", dim.use ,"_culster_all_DEGssampling500.csv"),sep = ",",row.names = T,quote = F)
-save(MERGE.markers,file = "/public/home/chidm/Workspace/ouyang/06_mdd.liver/paper/clustering-total/total_clustering.markers-sampling500.RData")
+write.table(top50,file = paste0(object.name,"_res", res.use ,"_dim", dim.use ,"_culster_top50_DEGs.csv"),sep = ",", row.names = T, quote = F)
+write.table(MERGE.markers,file = paste0(object.name,"_res",res.use ,"_dim", dim.use ,"_culster_all_DEGs.csv"),sep = ",",row.names = T,quote = F)
+escc.makers <- MERGE.markers
+save(escc.makers,file = "/public/home/chidm/Workspace/ouyang/06_mdd.liver/paper/clustering-total/total_clustering.markers.RData")
 
 
 ####----------分群常用Marker总结（小鼠）------###########
@@ -80,6 +80,16 @@ MERGE <- RenameIdents(object = MERGE,
                       `19` = "Plasma cell"
 )
 MERGE[["Anno.chi"]] <- Idents(object = MERGE)
+
+# save
+subset_cells <- MERGE
+subset_cells@assays$RNA@data <- as.matrix(0)
+subset_cells@assays$RNA@scale.data <- as.matrix(0)
+save(subset_cells, file = "~/Workspace/06_mdd.liver/paper/clustering-total/mdd.liver-v0/mdd.liver.RData")
+
+meta.data <- MERGE@meta.data
+save(meta.data, file = "~/Workspace/06_mdd.liver/paper/clustering-total/mdd.liver-v0/mdd.liver_meta.data.RData")
+
 
 ##########---------Plots----------###########
 # Fig5a
@@ -179,7 +189,7 @@ write.table(MERGE.markers,file = paste0(object.name,"_res",res.use ,"_dim", dim.
 save(MERGE.markers,file = "/public/home/chidm/Workspace/ouyang/06_mdd.liver/paper/clustering-total/total_clustering.markers-ANNO.RData")
 
 
-##########---------存储mdd.liver（重新注释）----------###########
+##########---------save mdd.liver ----------###########
 subset_cells <- MERGE
 subset_cells@assays$RNA@data <- as.matrix(0)
 subset_cells@assays$RNA@scale.data <- as.matrix(0)
@@ -216,25 +226,23 @@ celltype_colors <- c("Fibroblast"="#ea5c6f", "Epithelial cell"="#f7905a",
 # 绘制饼图
 p <- dat_plot %>%
   ggplot(aes(x = "", y = percent, fill = variable)) +
-  geom_bar(stat = "identity", width = 1, color = "black") + # 饼图分段
-  coord_polar(theta = "y") +                                # 转为饼图
-  facet_wrap(~ group, ncol = 2) +                          # 按group分组
-  scale_fill_manual(values = celltype_colors) +             # 自定义颜色
-  theme_minimal() +                                         # 去除背景
+  geom_bar(stat = "identity", width = 1, color = "black") + 
+  coord_polar(theta = "y") +                               
+  facet_wrap(~ group, ncol = 2) +                          
+  scale_fill_manual(values = celltype_colors) +            
+  theme_minimal() +                                         
   theme(
-    panel.background = element_rect(fill = "white", color = NA), # 设置绘图区域背景为白色
-    plot.background = element_rect(fill = "white", color = NA),  # 设置整个图片背景为白色
-    axis.text = element_blank(),                           # 移除坐标轴文字
-    axis.ticks = element_blank(),                          # 移除坐标轴刻度
+    panel.background = element_rect(fill = "white", color = NA), 
+    plot.background = element_rect(fill = "white", color = NA), 
+    axis.text = element_blank(),                          
+    axis.ticks = element_blank(),                          
     panel.grid = element_blank(),                          # 移除网格
-    strip.text = element_text(size = 12, face = "bold")    # 分面标题样式
+    strip.text = element_text(size = 12, face = "bold")    
   ) +
-  labs(fill = NULL, y = NULL, x = NULL,                     # 移除多余标签
+  labs(fill = NULL, y = NULL, x = NULL,                    
        title = "")  # Percentage of different cell types in different group
 
-# 保存图片
-# ggsave("Fig5e.tissue_celltype_piechart.pdf", p, width = 9, height = 6)##手动修改
-ggsave("Fig5e.tissue_celltype_piechart.png", p, width = 9, height = 6)##手动修改
+ggsave("Fig5e.tissue_celltype_piechart.png", p, width = 9, height = 6)
 write.csv(dat_plot,file='Fig5e.Source_data_tissue_celltype_piechart.csv')
 
 ######----------sFig5g.细胞比例 Facet-----------#####
@@ -248,13 +256,13 @@ dat$sample <- dat$sample %>% as.character()
 Box_dat_produce <- function(x){
   bb <- table(x$sample,x$cluster)%>%as.matrix
   bb_rowSum <- rowSums(bb)
-  join_col <- rep(bb_rowSum,length(table(x$cluster))) #rep 分群数量，需修改
+  join_col <- rep(bb_rowSum,length(table(x$cluster))) 
   bb <- as.data.frame(bb)
   bb <- cbind(bb,join_col)
   colnames(bb) <- c("sample","variable","freq","sum")
   percent <- bb$freq/bb$sum
   bb <- cbind(bb,percent)
-  group <- rep(x$group%>%as.character%>%unique,length(rownames(bb))) #根据分组更改
+  group <- rep(x$group%>%as.character%>%unique,length(rownames(bb))) 
   bb <- cbind(bb,group)
 }
 
@@ -354,56 +362,40 @@ VlnPlot(MERGE,
         features =  c("Chrna9"))
 dev.off() 
 
-####----------Fig5d.计算差异基因pvalue-最宽标准min.pct0-logfc0-wilcox----#####
+####----------Fig5d,6g,6l,sFig5f DEG calculation----#####
 # library(Seurat)
 # library(dplyr)
-
-# 获取所有的 clusters
 clusters <- levels(MERGE)
 
-# 使用 lapply 来对每个 cluster 执行差异表达分析
 all_degs <- lapply(clusters, function(cluster) {
-  # Subset Seurat 对象，选择特定的 cluster
   subset_data <- subset(MERGE, idents = cluster)
-  
-  # 设置 group 作为 identity 列，以便在 FindMarkers 中进行比较
   Idents(subset_data) <- "group"
   
-  # 执行 FindMarkers 函数，进行两组比较
   degs <- FindMarkers(
     subset_data,
-    ident.1 = "CRS",  # 组1
-    ident.2 = "Control",  # 组2
-    min.pct = 0,#默认为0.1
-    logfc.threshold = 0,#默认是0.25
+    ident.1 = "CRS",  
+    ident.2 = "Control",  
+    min.pct = 0,
+    logfc.threshold = 0,
     test.use = "wilcox" 
   )
   
-  # 添加 p 值校正
   degs$p_adj_BH <- p.adjust(degs$p_val, method = "BH")
   
-  # 添加一个列来标记是哪个 cluster 的结果
   degs$cluster <- cluster
   degs$gene <- rownames(degs)
   
-  return(degs)  # 返回当前 cluster 的结果
+  return(degs)  
 })
 
-# 使用 bind_rows 将所有的结果合并成一个单一的数据框
 final_degs <- bind_rows(all_degs)
 
-# 查看合并后的结果
 head(final_degs)
 
 final_degs <- final_degs[,c("cluster","gene", "p_val","avg_log2FC", "pct.1", "pct.2", "p_val_adj",
                             "p_adj_BH")]
 colnames(final_degs) <- c("cluster","gene", "p_val","avg_log2FC", "pct.1-Suicide", "pct.2-Control","p_val_adj", 
                           "p_adj_BH")
-# 如果需要，可以保存为 CSV 文件
-write.csv(final_degs, "Fig5d_related.DEGs_results_every_clusters-Stress vs Control-min.pct0-logfc0-wilcox.csv", row.names = F)
 
-final_degs %>% dplyr::filter(cluster=="Epithelial cell") %>%  
-  dplyr::filter(gene%in%c("Chrna1","Chrna2","Chrna4","Chrna5", "Chrna7","Chrna9", "Chrna10",
-                          "Chrnb1","Chrnb2", "Chrnb3", "Chrnb4",
-                          "Chrnd","Chrne","Chrng","Chrm1", "Chrm2", "Chrm3", "Chrm4")) %>% write.csv("Fig5d.realted_epi.Ach-统计.csv",row.names = F)
+write.csv(final_degs, "DEGs_results_every_clusters-Stress vs Control.csv", row.names = F)
 
